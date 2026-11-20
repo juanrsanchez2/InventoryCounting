@@ -1,4 +1,4 @@
 gradio
 opencv-python-headless
 numpy
-ultralytics
+onnxruntime
