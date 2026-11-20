@@ -82,8 +82,8 @@ with gr.Blocks(title="Inventory Counting System") as demo:
     
     # Creating a button to clear the uploaded image and results
     clearButton = gr.ClearButton(
-    components=[inputImage, outputImage, outputCount],
-    value="Clear"
+        components=[inputImage, outputImage, outputCount],
+        value="Clear"
     )
 
     # Connecting the button to the inventory counting function
