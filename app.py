@@ -87,7 +87,7 @@ def processInventory(uploadedImage):
 
     # Removing overlapping detections
     selectedIndices = cv2.dnn.NMSBoxes(
-        boxes, scores, 0.55, 0.40
+        boxes, scores, 0.25, 0.40
     )
 
     # Creating a copy of the uploaded image
