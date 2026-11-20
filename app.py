@@ -66,8 +66,13 @@ def processInventory(uploadedImage):
 # Creating the inventory counting web interface
 with gr.Blocks(title="Inventory Counting System") as demo:
 
-    gr.Markdown("# Inventory Counting System")
-    gr.Markdown("Upload an inventory image to automatically detect and count items.")
+    gr.Markdown(
+        "Upload a photograph of your inventory, then click **Count Inventory** "
+        "to automatically detect and count the items. "
+        "The results will display numbered bounding boxes around detected items "
+        "and the total inventory count. "
+        "Click **Clear** to reset the interface and upload another photograph."
+    )
 
     # Creating the image upload and results display
     with gr.Row():
