@@ -68,7 +68,7 @@ def processInventory(uploadedImage):
         classScores = prediction[4:]
         confidence = float(np.max(classScores))
 
-        if confidence >= 0.55:
+        if confidence >= 0.25:
             x, y, w, h = prediction[:4]
 
             x1 = (x - w / 2 - left) / scale
