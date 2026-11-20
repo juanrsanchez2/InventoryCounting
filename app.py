@@ -2,6 +2,10 @@
 import cv2
 import numpy as np
 import gradio as gr
+from ultralytics import YOLO
+
+# Loading our trained CNN model
+model = YOLO("TrainedModel/best.pt")
 
 # Processing images uploaded through the web interface
 def processInventory(uploadedImage):
@@ -10,35 +14,13 @@ def processInventory(uploadedImage):
     if uploadedImage is None:
         return None, 0
 
-    # Converting the uploaded image to OpenCV's BGR format
-    image = cv2.cvtColor(uploadedImage, cv2.COLOR_RGB2BGR)
-
-    # Converting the image to grayscale
-    grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Applying Gaussian blurring
-    blurredImage = cv2.GaussianBlur(grayImage, (5, 5), 0)
-
-    # Applying Canny edge detection
-    edgeImage = cv2.Canny(blurredImage, 50, 150)
-
-    # Applying morphological closing
-    kernel = np.ones((5, 5), np.uint8)
-    closedImage = cv2.morphologyEx(edgeImage, cv2.MORPH_CLOSE, kernel)
-
-    # Finding the external contours
-    contours, hierarchy = cv2.findContours(closedImage,
-                                           cv2.RETR_EXTERNAL,
-                                           cv2.CHAIN_APPROX_SIMPLE)
-
-    # Filtering out small contours
-    filteredContours = []
-
-    for contour in contours:
-        area = cv2.contourArea(contour)
-
-        if area >= 1000:
-            filteredContours.append(contour)
+    # Detecting soda cans using our trained CNN
+    results = model.predict(
+        source=uploadedImage,
+        conf=0.55,
+        iou=0.40,
+        verbose=False
+    )
 
     # Creating a copy of the uploaded image
     resultImage = uploadedImage.copy()
@@ -46,19 +28,19 @@ def processInventory(uploadedImage):
     # Drawing bounding boxes and numbering inventory items
     itemNumber = 1
 
-    for contour in filteredContours:
-        x, y, w, h = cv2.boundingRect(contour)
+    for box in results[0].boxes:
+        x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
 
-        cv2.rectangle(resultImage, (x, y), (x + w, y + h),
+        cv2.rectangle(resultImage, (x1, y1), (x2, y2),
                       (0, 255, 0), 2)
 
-        cv2.putText(resultImage, str(itemNumber), (x, y - 10),
+        cv2.putText(resultImage, str(itemNumber), (x1, y1 - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
         itemNumber += 1
 
     # Calculating the total inventory count
-    totalCount = len(filteredContours)
+    totalCount = len(results[0].boxes)
 
     return resultImage, totalCount
 
@@ -84,7 +66,7 @@ with gr.Blocks(title="Inventory Counting System") as demo:
 
     # Creating the button to process the uploaded image
     countButton = gr.Button("Count Inventory")
-    
+
     # Creating a button to clear the uploaded image and results
     clearButton = gr.ClearButton(
         components=[inputImage, outputImage, outputCount],
